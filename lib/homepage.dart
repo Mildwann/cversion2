@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'package:camera/camera.dart';
+import 'package:cversion2/screens/camera-on/opencamera.dart';
 import 'package:cversion2/screens/checkpermission.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -20,26 +23,40 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _openDialogCheckPermission() {
-    showGeneralDialog(
+  Future<void> _openDialogCheckPermission() async {
+  final cameraStatus = await Permission.camera.status;
+
+  if (cameraStatus.isGranted) {
+    final cameras = await availableCameras();
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullPageDialog(cameras: cameras),
+      ),
+    );
+  } else {
+    final result = await showGeneralDialog<bool>(
       context: context,
       barrierDismissible: true,
       barrierLabel: "CheckPermissionDialog",
       pageBuilder: (context, anim1, anim2) {
-        return CheckPermission();
+        return const CheckPermission();
       },
       transitionBuilder: (context, anim1, anim2, child) {
         return SlideTransition(
           position: Tween(
-            begin: Offset(0, 1),
-            end: Offset(0, 0),
+            begin: const Offset(0, 1),
+            end: const Offset(0, 0),
           ).animate(anim1),
           child: child,
         );
       },
-      transitionDuration: Duration(milliseconds: 300),
+      transitionDuration: const Duration(milliseconds: 300),
     );
+
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.white, // เปลี่ยนพื้นหลังเป็นสีขาว
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -125,13 +142,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                   horizontal: 20,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color.fromARGB(74, 195, 222, 251),
+                                  color: const Color.fromARGB(
+                                    74,
+                                    195,
+                                    222,
+                                    251,
+                                  ),
                                   borderRadius: BorderRadius.circular(30),
                                   border: Border.all(
                                     color: Colors.blue.withOpacity(0.2),
                                     width: 1.5,
                                   ),
-                                  
                                 ),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -140,13 +161,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                     Icon(
                                       Icons.camera_alt_rounded,
                                       size: 80,
-                                      color: const Color(0xff6385f7),
+                                      color: Color(0xff6385f7),
                                     ),
                                     SizedBox(height: 24),
                                     Text(
                                       'Capture the moment',
                                       style: TextStyle(
-                                        color: const Color(0xff6385f7),
+                                        color: Color(0xff6385f7),
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -183,9 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
-                    _openDialogCheckPermission();
-                  },
+                  onPressed: _openDialogCheckPermission,
                   child: const Text(
                     'Start camera',
                     style: TextStyle(
