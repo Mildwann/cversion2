@@ -1,9 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
 import 'dart:io';
-import 'package:camera/camera.dart';
-import 'package:cversion2/screens/camera-on/opencamera.dart';
 import 'package:cversion2/screens/checkpermission.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -24,18 +22,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _openDialogCheckPermission() async {
-  final cameraStatus = await Permission.camera.status;
-
-  if (cameraStatus.isGranted) {
-    final cameras = await availableCameras();
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FullPageDialog(cameras: cameras),
-      ),
-    );
-  } else {
-    final result = await showGeneralDialog<bool>(
+    await showGeneralDialog<bool>(
       context: context,
       barrierDismissible: true,
       barrierLabel: "CheckPermissionDialog",
@@ -53,10 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       transitionDuration: const Duration(milliseconds: 300),
     );
-
   }
-}
-
 
   @override
   Widget build(BuildContext context) {

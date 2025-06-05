@@ -7,7 +7,6 @@ import 'package:camera/camera.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-
 class FullPageDialog extends StatefulWidget {
   final List<CameraDescription> cameras;
   const FullPageDialog({super.key, required this.cameras});
@@ -16,7 +15,8 @@ class FullPageDialog extends StatefulWidget {
   State<FullPageDialog> createState() => _FullPageDialogState();
 }
 
-class _FullPageDialogState extends State<FullPageDialog>   with WidgetsBindingObserver{
+class _FullPageDialogState extends State<FullPageDialog>
+    with WidgetsBindingObserver {
   CameraController? _controller;
   bool _isCameraInitialized = false;
   int _selectedCameraIndex = 0;
@@ -29,14 +29,14 @@ class _FullPageDialogState extends State<FullPageDialog>   with WidgetsBindingOb
   void initState() {
     super.initState();
     // _initializeCamera();
-     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     _checkCameraPermissionAndInit();
   }
-  
-   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
 
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       // เมื่อแอพถูกสลับไป background หรือ inactive ให้ปิด dialog
       if (mounted) {
         Navigator.of(context).pop(_capturedImage?.path);
@@ -126,7 +126,9 @@ class _FullPageDialogState extends State<FullPageDialog>   with WidgetsBindingOb
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ภาพถูกบันทึกลงในคลังรูปภาพเรียบร้อยแล้ว')),
+          const SnackBar(
+            content: Text('ภาพถูกบันทึกลงในคลังรูปภาพเรียบร้อยแล้ว'),
+          ),
         );
       } catch (e) {
         print("Error saving image: $e");
@@ -138,19 +140,26 @@ class _FullPageDialogState extends State<FullPageDialog>   with WidgetsBindingOb
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ไม่ได้รับสิทธิ์ในการเข้าถึงพื้นที่จัดเก็บ')),
+        const SnackBar(
+          content: Text('ไม่ได้รับสิทธิ์ในการเข้าถึงพื้นที่จัดเก็บ'),
+        ),
       );
     }
   }
 
   Future<void> _takePicture() async {
-    if (!_controller!.value.isInitialized || _controller!.value.isTakingPicture) return;
+    if (!_controller!.value.isInitialized || _controller!.value.isTakingPicture)
+      return;
 
     try {
       final XFile picture = await _controller!.takePicture();
       final imageFile = File(picture.path);
-      final decodedImage = await decodeImageFromList(await imageFile.readAsBytes());
-      print('Captured Image Size: ${decodedImage.width} x ${decodedImage.height}');
+      final decodedImage = await decodeImageFromList(
+        await imageFile.readAsBytes(),
+      );
+      print(
+        'Captured Image Size: ${decodedImage.width} x ${decodedImage.height}',
+      );
 
       await _controller?.dispose();
 
@@ -178,7 +187,8 @@ class _FullPageDialogState extends State<FullPageDialog>   with WidgetsBindingOb
     }
   }
 
-  void _closeCamera() {
+  void _closeCamera() async {
+    await _controller?.dispose();
     Navigator.pop(context, _capturedImage?.path);
   }
 
@@ -227,11 +237,19 @@ class _FullPageDialogState extends State<FullPageDialog>   with WidgetsBindingOb
                 ),
                 const Text(
                   'Camera',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 GestureDetector(
                   onTap: _openSettingsPanel,
-                  child: const Icon(Icons.settings, color: Colors.white, size: 28),
+                  child: const Icon(
+                    Icons.settings,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                 ),
               ],
             ),
@@ -251,7 +269,10 @@ class _FullPageDialogState extends State<FullPageDialog>   with WidgetsBindingOb
                               width: 80,
                               height: 120,
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
                               ),
                               child: Image.file(
                                 File(_capturedImage!.path),
@@ -262,7 +283,9 @@ class _FullPageDialogState extends State<FullPageDialog>   with WidgetsBindingOb
                         ),
                     ],
                   )
-                : const Center(child: CircularProgressIndicator(color: Colors.white)),
+                : const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
@@ -270,17 +293,18 @@ class _FullPageDialogState extends State<FullPageDialog>   with WidgetsBindingOb
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.7),
-                ],
+                colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
               ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.flip_camera_ios_outlined, color: Colors.white, size: 28),
+                  icon: const Icon(
+                    Icons.flip_camera_ios_outlined,
+                    color: Colors.white,
+                    size: 28,
+                  ),
                   onPressed: _switchCamera,
                 ),
                 GestureDetector(

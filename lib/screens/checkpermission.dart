@@ -1,3 +1,4 @@
+import 'package:cversion2/screens/ready-opencamera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -13,6 +14,7 @@ class _CheckPermissionState extends State<CheckPermission>
   bool _isRequesting = false;
   bool _permissionDenied = false;
   bool _isPermanentlyDenied = false;
+  bool _comingFromSettings = false;
 
   @override
   void initState() {
@@ -27,9 +29,41 @@ class _CheckPermissionState extends State<CheckPermission>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      if (mounted) {
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed && _comingFromSettings) {
+      _comingFromSettings = false;
+
+      final status = await Permission.camera.status;
+
+      if (status.isGranted && mounted) {
+        while (Navigator.canPop(context)) {
+          Navigator.of(context).pop();
+        }
+        await Future.delayed(const Duration(milliseconds: 200));
+
+        // ไปหน้า ReadyOpenCamera
+        await showGeneralDialog(
+          // ignore: use_build_context_synchronously
+          context: context,
+          barrierDismissible: true,
+          barrierLabel: "ReadyOpenCameraDialog",
+          barrierColor: Colors.black.withOpacity(0.6), // ฉากหลังโปร่งแสง
+          transitionDuration: const Duration(milliseconds: 300),
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return const ReadyOpenCamera(); // ใส่ widget เต็มจอตรงนี้
+          },
+          transitionBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            );
+          },
+        );
+      } else if (mounted) {
+        // ยังไม่ได้อนุญาต กลับหน้า home (
         Navigator.of(context).pop(true);
       }
     }
@@ -50,12 +84,38 @@ class _CheckPermissionState extends State<CheckPermission>
       _isPermanentlyDenied = status.isPermanentlyDenied;
     });
 
-    // if (status.isGranted) {
-    //   Navigator.of(context).pop(true);
-    // }
+    if (status.isGranted) {
+      while (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      if (mounted) {
+        await showGeneralDialog(
+          context: context,
+          barrierDismissible: true,
+          barrierLabel: "ReadyOpenCameraDialog",
+          barrierColor: Colors.black.withOpacity(0.6), // ฉากหลังโปร่งแสง
+          transitionDuration: const Duration(milliseconds: 300),
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return const ReadyOpenCamera(); // ใส่ widget เต็มจอตรงนี้
+          },
+          transitionBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            );
+          },
+        );
+      }
+    }
   }
 
   void _openAppSettings() async {
+    _comingFromSettings = true;
     final opened = await openAppSettings();
     if (!opened && mounted) {
       ScaffoldMessenger.of(
@@ -72,7 +132,7 @@ class _CheckPermissionState extends State<CheckPermission>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(false),
         ),
       ),
