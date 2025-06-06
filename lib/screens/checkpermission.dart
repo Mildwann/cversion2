@@ -15,8 +15,7 @@ class _CheckPermissionState extends State<CheckPermission>
   bool _permissionDenied = false;
   bool _isPermanentlyDenied = false;
   bool _comingFromSettings = false;
-  
-
+  String? result;
   @override
   void initState() {
     super.initState();
@@ -32,6 +31,7 @@ class _CheckPermissionState extends State<CheckPermission>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
+
     if (state == AppLifecycleState.paused) {
       // กลับหน้า Home เมื่อกลับเข้าแอพใหม่
       if (Navigator.of(context).canPop()) {
@@ -57,35 +57,11 @@ class _CheckPermissionState extends State<CheckPermission>
 
     if (status.isGranted) {
       await Future.delayed(const Duration(milliseconds: 200));
-      
-      final result = await showGeneralDialog(
-        context: context,
-        barrierDismissible: true,
-        barrierLabel: "ReadyOpenCameraDialog",
-        barrierColor: Colors.black.withOpacity(0.6), // ฉากหลังโปร่งแสง
-        transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return const ReadyOpenCamera(); // ใส่ widget เต็มจอตรงนี้
-        },
-        transitionBuilder: (context, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween(
-              begin: const Offset(0, 1),
-              end: Offset.zero,
-            ).animate(animation),
-            child: child,
-          );
-        },
-      );
-
-      if (result != null) {
-        print('Captured image pathssss: $result');
+      while (Navigator.canPop(context)) {
+        result = "camera-access";
+        Navigator.of(context).pop(result); // แค่ pop ล่าสุด
       }
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context, result);
-        }
-      });
+
     }
   }
 

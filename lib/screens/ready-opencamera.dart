@@ -106,40 +106,8 @@ class _ReadyOpenCameraState extends State<ReadyOpenCamera> with WidgetsBindingOb
                       child: ElevatedButton.icon(
                         onPressed: () async {
                           
-                          final result = await showGeneralDialog<String>(
-                            context: context,
-                            barrierDismissible: true,
-                            barrierLabel: 'CameraDialog',
-                            barrierColor: Colors.black.withOpacity(0.6),
-                            transitionDuration: const Duration(
-                              milliseconds: 300,
-                            ),
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) {
-                                  return FullPageDialog(cameras: cameras);
-                                },
-                            transitionBuilder:
-                                (
-                                  context,
-                                  animation,
-                                  secondaryAnimation,
-                                  child,
-                                ) {
-                                  return SlideTransition(
-                                    position: Tween(
-                                      begin: const Offset(0, 1),
-                                      end: Offset.zero,
-                                    ).animate(animation),
-                                    child: child,
-                                  );
-                                },
-                          );
-
-                          if (result != null) {
-                            print('Captured image path: $result');
-                          }
                           if (Navigator.canPop(context)) {
-                            Navigator.pop(context , result);
+                            Navigator.of(context, rootNavigator: true).pop("ready-open-camera");
                           }
                         },
                         icon: const Icon(Icons.camera_alt_rounded),

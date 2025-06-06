@@ -1,6 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
 import 'dart:io';
+import 'package:camera/camera.dart';
+import 'package:cversion2/screens/camera-on/opencamera.dart';
 import 'package:cversion2/screens/checkpermission.dart';
+import 'package:cversion2/screens/ready-opencamera.dart';
 import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -22,31 +24,88 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _openDialogCheckPermission() async {
-    final result = await showGeneralDialog<String>(
+  final result = await showGeneralDialog<String>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: "CheckPermissionDialog",
+    pageBuilder: (context, anim1, anim2) {
+      return const CheckPermission();
+    },
+    transitionBuilder: (context, anim1, anim2, child) {
+      return SlideTransition(
+        position: Tween(begin: const Offset(0, 1), end: Offset.zero).animate(anim1),
+        child: child,
+      );
+    },
+    transitionDuration: const Duration(milliseconds: 300),
+  );
+
+  if (result == "camera-access") {
+    final result1 = await showGeneralDialog<String>(
       context: context,
       barrierDismissible: true,
-      barrierLabel: "CheckPermissionDialog",
-      pageBuilder: (context, anim1, anim2) {
-        return const CheckPermission();
+      barrierLabel: "ReadyOpenCameraDialog",
+      barrierColor: Colors.black.withOpacity(0.6),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return const ReadyOpenCamera();
       },
-      transitionBuilder: (context, anim1, anim2, child) {
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
         return SlideTransition(
-          position: Tween(
-            begin: const Offset(0, 1),
-            end: const Offset(0, 0),
-          ).animate(anim1),
+          position: Tween(begin: const Offset(0, 1), end: Offset.zero).animate(animation),
           child: child,
         );
       },
-      transitionDuration: const Duration(milliseconds: 300),
     );
-    if (result != null) {
-      print('Captured image pathssssdd: $result');
-      setState(() {
-    _lastCapturedImagePath = result;
-  });
+
+    if (result1 == "ready-open-camera") {
+      try {
+        final cameras = await availableCameras();
+
+        if (cameras.isNotEmpty) {
+          await openCameraDialog(context, cameras);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No camera found')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to get cameras: $e')),
+        );
+      }
     }
   }
+}
+
+Future<void> openCameraDialog(
+  BuildContext context,
+  List<CameraDescription> cameras,
+) async {
+  final result = await showGeneralDialog<String>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: 'CameraDialog',
+    barrierColor: Colors.black.withOpacity(0.6),
+    transitionDuration: const Duration(milliseconds: 300),
+    pageBuilder: (context, animation, secondaryAnimation) {
+      return FullPageDialog(cameras: cameras);
+    },
+    transitionBuilder: (context, animation, secondaryAnimation, child) {
+      return SlideTransition(
+        position: Tween(begin: const Offset(0, 1), end: Offset.zero).animate(animation),
+        child: child,
+      );
+    },
+  );
+
+  if (result != null) {
+    print('Captured image pathsss: $result');
+    setState(() {
+      _lastCapturedImagePath = result;
+    });
+  }
+}
 
   @override
   Widget build(BuildContext context) {
