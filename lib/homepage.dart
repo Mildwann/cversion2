@@ -22,7 +22,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _openDialogCheckPermission() async {
-    await showGeneralDialog<bool>(
+    final result = await showGeneralDialog<String>(
       context: context,
       barrierDismissible: true,
       barrierLabel: "CheckPermissionDialog",
@@ -40,6 +40,12 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       transitionDuration: const Duration(milliseconds: 300),
     );
+    if (result != null) {
+      print('Captured image pathssssdd: $result');
+      setState(() {
+    _lastCapturedImagePath = result;
+  });
+    }
   }
 
   @override

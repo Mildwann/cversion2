@@ -9,14 +9,33 @@ class ReadyOpenCamera extends StatefulWidget {
   State<ReadyOpenCamera> createState() => _ReadyOpenCameraState();
 }
 
-class _ReadyOpenCameraState extends State<ReadyOpenCamera> {
+class _ReadyOpenCameraState extends State<ReadyOpenCamera> with WidgetsBindingObserver {
   late Future<List<CameraDescription>> _camerasFuture;
 
   @override
   void initState() {
     super.initState();
     _camerasFuture = availableCameras();
+    WidgetsBinding.instance.addObserver(this);
   }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // กลับหน้า Home เมื่อกลับเข้าแอพใหม่
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    }
+  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +45,7 @@ class _ReadyOpenCameraState extends State<ReadyOpenCamera> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(false),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
@@ -86,9 +105,7 @@ class _ReadyOpenCameraState extends State<ReadyOpenCamera> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
-                          }
+                          
                           final result = await showGeneralDialog<String>(
                             context: context,
                             barrierDismissible: true,
@@ -120,6 +137,9 @@ class _ReadyOpenCameraState extends State<ReadyOpenCamera> {
 
                           if (result != null) {
                             print('Captured image path: $result');
+                          }
+                          if (Navigator.canPop(context)) {
+                            Navigator.pop(context , result);
                           }
                         },
                         icon: const Icon(Icons.camera_alt_rounded),
